@@ -5,10 +5,8 @@ namespace CmiPayBundle\Controller;
 use CmiPayBundle\CmiPay;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer;
@@ -19,12 +17,17 @@ use Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer;
  */
 class CmiPayController extends AbstractController
 {
+    /**
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function requestPay(Request $request)
     {
         $params = new CmiPay();
         // Setup new payment parameters
         $okUrl = $this->generateUrl('cmi_pay_okFail', [], UrlGeneratorInterface::ABSOLUTE_URL);
-        $shopUrl = $baseurl = $request->getScheme() . '://' . $request->getHttpHost() . $request->getBasePath();
+        $shopUrl = $request->getScheme() . '://' . $request->getHttpHost() . $request->getBasePath();
         $failUrl = $this->generateUrl('cmi_pay_okFail', [], UrlGeneratorInterface::ABSOLUTE_URL);
         $callbackUrl = $this->generateUrl('cmi_pay_callback', [], UrlGeneratorInterface::ABSOLUTE_URL);
         $rnd = microtime();
@@ -66,28 +69,38 @@ class CmiPayController extends AbstractController
         ]);
     }
 
+    /**
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function okFail(Request $request)
     {
         $postData = $request->request->all();
 
         if ($postData) {
             $actualHash = $this->hashValue($postData);
-            $retrievedHash = $postData["HASH"];
+            $retrievedHash = $postData['HASH'];
 
-            if ($retrievedHash == $actualHash && $postData["ProcReturnCode"] == "00") {
-                $response = "HASH is successfull";
+            if ($retrievedHash === $actualHash && $postData['ProcReturnCode'] === '00') {
+                $response = 'HASH is successfull';
             } else {
-                $response = "Security Alert. The digital signature is not valid";
+                $response = 'Security Alert. The digital signature is not valid';
             }
         } else {
-            $response = "No Data POST";
+            $response = 'No Data POST';
         }
 
         return $this->render('@CmiPay/okFail.html.twig', [
-            "response" => $response,
+            'response' => $response,
         ]);
     }
 
+    /**
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function callback(Request $request)
     {
         $postData = $request->request->all();
@@ -96,21 +109,26 @@ class CmiPayController extends AbstractController
             $actualHash = $this->hashValue($postData);
             $retrievedHash = $postData["HASH"];
 
-            if ($retrievedHash == $actualHash && $_POST["ProcReturnCode"] == "00") {
-                $response = "ACTION=POSTAUTH";
+            if ($retrievedHash === $actualHash && $_POST['ProcReturnCode'] === '00') {
+                $response = 'ACTION=POSTAUTH';
             } else {
-                $response = "FAILURE";
+                $response = 'FAILURE';
             }
         } else {
-            $response = "No Data POST";
+            $response = 'No Data POST';
         }
 
         return $this->render('@CmiPay/callback.html.twig', [
-            "response" => $response,
+            'response' => $response,
         ]);
     }
 
-    public function hashValue($data)
+    /**
+     * @param array $data
+     *
+     * @return string
+     */
+    private function hashValue($data)
     {
         $params = new CmiPay();
         $params->setSecretKey('TEST1234');
@@ -119,7 +137,7 @@ class CmiPayController extends AbstractController
         $postParams = [];
 
         foreach ($data as $key => $value) {
-            array_push($postParams, $key);
+            $postParams[] = $key;
         }
 
         natcasesort($postParams);
@@ -128,19 +146,18 @@ class CmiPayController extends AbstractController
 
         foreach ($postParams as $param) {
             $paramValue = trim(html_entity_decode(preg_replace("/\n$/", "", $data[$param]), ENT_QUOTES, 'UTF-8'));
-            $escapedParamValue = str_replace("|", "\\|", str_replace("\\", "\\\\", $paramValue));
+            $escapedParamValue = str_replace(["\\", "|"], ["\\\\", "\\|"], $paramValue);
             $escapedParamValue = preg_replace('/document(.)/i', 'document.', $escapedParamValue);
 
             $lowerParam = strtolower($param);
 
-            if ($lowerParam != "hash" && $lowerParam != "encoding") {
-                $hashval = $hashval . $escapedParamValue . "|";
+            if ($lowerParam !== 'hash' && $lowerParam !== 'encoding') {
+                $hashval .= ($escapedParamValue . '|');
             }
         }
 
-
-        $escapedStoreKey = str_replace("|", "\\|", str_replace("\\", "\\\\", $storeKey));
-        $hashval = $hashval . $escapedStoreKey;
+        $escapedStoreKey = str_replace(["\\", "|"], ["\\\\", "\\|"], $storeKey);
+        $hashval .= $escapedStoreKey;
 
         $calculatedHashValue = hash('sha512', $hashval);
         $hash = base64_encode(pack('H*', $calculatedHashValue));
@@ -148,13 +165,18 @@ class CmiPayController extends AbstractController
         return $hash;
     }
 
-    public function convertData(CmiPay $params)
+    /**
+     * @param \CmiPayBundle\CmiPay $params
+     *
+     * @return array
+     */
+    private function convertData(CmiPay $params)
     {
         $encoders = [new XmlEncoder(), new JsonEncoder()];
         $normalizers = [new GetSetMethodNormalizer()];
         $serializer = new Serializer($normalizers, $encoders);
         $jsonContent = $serializer->serialize($params, 'json');
-        $data = (array)json_decode($jsonContent);
+        $data = json_decode($jsonContent, true);
 
         foreach ($data as $key => $value) {
             $data[$key] = trim(html_entity_decode($value));
@@ -163,9 +185,15 @@ class CmiPayController extends AbstractController
         return $data;
     }
 
-    public function unsetData($data)
+    /**
+     * @param array $data
+     *
+     * @return array
+     */
+    private function unsetData($data)
     {
         unset($data['gatewayurl'], $data['secretKey']);
+
         return $data;
     }
 }
