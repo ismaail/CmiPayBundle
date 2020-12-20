@@ -24,14 +24,14 @@ class CmiPayController extends AbstractController
      */
     public function requestPay(Request $request)
     {
-        $params = new CmiPay();
+        $cmiPay = new CmiPay();
         // Setup new payment parameters
         $okUrl = $this->generateUrl('cmi_pay_okFail', [], UrlGeneratorInterface::ABSOLUTE_URL);
         $shopUrl = $request->getScheme() . '://' . $request->getHttpHost() . $request->getBasePath();
         $failUrl = $this->generateUrl('cmi_pay_okFail', [], UrlGeneratorInterface::ABSOLUTE_URL);
         $callbackUrl = $this->generateUrl('cmi_pay_callback', [], UrlGeneratorInterface::ABSOLUTE_URL);
         $rnd = microtime();
-        $params->setGatewayurl('https://testpayment.cmi.co.ma/fim/est3Dgate')
+        $cmiPay->setGatewayurl('https://testpayment.cmi.co.ma/fim/est3Dgate')
             ->setclientid('600000000')
             ->setTel('05000000')
             ->setEmail('email@domaine.ma')
@@ -58,14 +58,14 @@ class CmiPayController extends AbstractController
             ->setRnd($rnd)
         ;
 
-        $data = $this->convertData($params);
+        $data = $this->convertData($cmiPay);
         $hash = $this->hashValue($data);
         $data['HASH'] = $hash;
         $data = $this->unsetData($data);
 
         return $this->render('@CmiPay/payrequest.html.twig', [
             'data' => $data,
-            'url' => $params->getGatewayurl(),
+            'url' => $cmiPay->getGatewayurl(),
         ]);
     }
 
@@ -107,9 +107,9 @@ class CmiPayController extends AbstractController
 
         if ($postData) {
             $actualHash = $this->hashValue($postData);
-            $retrievedHash = $postData["HASH"];
+            $retrievedHash = $postData['HASH'];
 
-            if ($retrievedHash === $actualHash && $_POST['ProcReturnCode'] === '00') {
+            if ($retrievedHash === $actualHash && '00' === $request->request->get('ProcReturnCode')) {
                 $response = 'ACTION=POSTAUTH';
             } else {
                 $response = 'FAILURE';
@@ -128,7 +128,7 @@ class CmiPayController extends AbstractController
      *
      * @return string
      */
-    private function hashValue($data)
+    private function hashValue(array $data): string
     {
         $params = new CmiPay();
         $params->setSecretKey('TEST1234');
@@ -160,22 +160,20 @@ class CmiPayController extends AbstractController
         $hashval .= $escapedStoreKey;
 
         $calculatedHashValue = hash('sha512', $hashval);
-        $hash = base64_encode(pack('H*', $calculatedHashValue));
-
-        return $hash;
+        return base64_encode(pack('H*', $calculatedHashValue));
     }
 
     /**
-     * @param \CmiPayBundle\CmiPay $params
+     * @param \CmiPayBundle\CmiPay $cmiPay
      *
      * @return array
      */
-    private function convertData(CmiPay $params)
+    private function convertData(CmiPay $cmiPay)
     {
         $encoders = [new XmlEncoder(), new JsonEncoder()];
         $normalizers = [new GetSetMethodNormalizer()];
         $serializer = new Serializer($normalizers, $encoders);
-        $jsonContent = $serializer->serialize($params, 'json');
+        $jsonContent = $serializer->serialize($cmiPay, 'json');
         $data = json_decode($jsonContent, true);
 
         foreach ($data as $key => $value) {
@@ -190,7 +188,7 @@ class CmiPayController extends AbstractController
      *
      * @return array
      */
-    private function unsetData($data)
+    private function unsetData(array $data): array
     {
         unset($data['gatewayurl'], $data['secretKey']);
 

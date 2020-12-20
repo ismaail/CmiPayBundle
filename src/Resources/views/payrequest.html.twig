@@ -4,15 +4,15 @@
 
 {% block body %}
 
-    <form name="payForm"  id="payForm" method="post" action="{{url}}">
+    <form name="payForm" id="payForm" method="post" action="{{ url }}">
         {% for name, value in data %}
-            <input type="hidden" name="{{ name }}" value="{{ value }}" />
+            <input type="hidden" name="{{ name }}" value="{{ value }}"/>
         {% endfor %}
     </form>
 
 {% endblock %}
 {% block javascripts %}
-<script type="text/javascript">
-    document.getElementById("payForm").submit();
-</script>
+    <script type="text/javascript">
+        document.getElementById("payForm").submit();
+    </script>
 {% endblock %}
