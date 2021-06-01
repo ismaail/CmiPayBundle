@@ -20,7 +20,7 @@ class CmiPay
      *
      * @var string
      */
-    private $secretKey;
+    private $secretKey = '';
 
 
     // Customer fields
@@ -50,49 +50,49 @@ class CmiPay
      *
      * @var string
      */
-    private $BillToName;
+    private $billToName;
 
     /**
      * Customer company name for shipping
      *
      * @var string
      */
-    private $BillToCompany;
+    private $billToCompany;
 
     /**
      * Customer address for shipping
      *
      * @var string
      */
-    private $BillToStreet1;
+    private $billToStreet1;
 
     /**
      * Customer state for shipping
      *
      * @var string
      */
-    private $BillToStateProv;
+    private $billToStateProv;
 
     /**
      * Customer ZIP Code for shipping
      *
      * @var string
      */
-    private $BillToPostalCode;
+    private $billToPostalCode;
 
     /**
      * Customer city for shipping
      *
      * @var string
      */
-    private $BillToCity;
+    private $billToCity;
 
     /**
      * Customer country for shipping
      *
      * @var string
      */
-    private $BillToCountry;
+    private $billToCountry;
 
     // Order Fields
     /**
@@ -164,7 +164,7 @@ class CmiPay
      *
      * @var string
      */
-    private $TranType;
+    private $tranType;
 
     /**
      * refreshtime
@@ -254,86 +254,86 @@ class CmiPay
         return $this;
     }
 
-    public function getBillToName()
+    public function getbillToName()
     {
-        return $this->BillToName;
+        return $this->billToName;
     }
 
-    public function setBillToName($billToName)
+    public function setbillToName($billToName)
     {
-        $this->BillToName = $billToName;
+        $this->billToName = $billToName;
 
         return $this;
     }
 
     public function getBillToCompany()
     {
-        return $this->BillToCompany;
+        return $this->billToCompany;
     }
 
     public function setBillToCompany($billToCompany)
     {
-        $this->BillToCompany = $billToCompany;
+        $this->billToCompany = $billToCompany;
 
         return $this;
     }
 
     public function getBillToStreet1()
     {
-        return $this->BillToStreet1;
+        return $this->billToStreet1;
     }
 
     public function setBillToStreet1($billToStreet1)
     {
-        $this->BillToStreet1 = $billToStreet1;
+        $this->billToStreet1 = $billToStreet1;
 
         return $this;
     }
 
     public function getBillToStateProv()
     {
-        return $this->BillToStateProv;
+        return $this->billToStateProv;
     }
 
     public function setBillToStateProv($billToStateProv)
     {
-        $this->BillToStateProv = $billToStateProv;
+        $this->billToStateProv = $billToStateProv;
 
         return $this;
     }
 
     public function getBillToPostalCode()
     {
-        return $this->BillToPostalCode;
+        return $this->billToPostalCode;
     }
 
     public function setBillToPostalCode($billToPostalCode)
     {
-        $this->BillToPostalCode = $billToPostalCode;
+        $this->billToPostalCode = $billToPostalCode;
 
         return $this;
     }
 
     public function getBillToCity()
     {
-        return $this->BillToCity;
+        return $this->billToCity;
     }
 
     public function setBillToCity($billToCity)
     {
-        $this->BillToCity = $billToCity;
+        $this->billToCity = $billToCity;
 
         return $this;
     }
 
     public function getBillToCountry()
     {
-        return $this->BillToCountry;
+        return $this->billToCountry;
     }
 
     public function setBillToCountry($billToCountry)
     {
-        $this->BillToCountry = $billToCountry;
+        $this->billToCountry = $billToCountry;
 
         return $this;
     }
@@ -460,12 +460,12 @@ class CmiPay
 
     public function getTranType()
     {
-        return $this->TranType;
+        return $this->tranType;
     }
 
     public function setTranType($tranType)
     {
-        $this->TranType = $tranType;
+        $this->tranType = $tranType;
 
         return $this;
     }
