@@ -130,28 +130,23 @@ class CmiPayController extends AbstractController
      */
     private function hashValue(array $data): string
     {
-        $params = new CmiPay();
-        $params->setSecretKey('TEST1234');
-        $storeKey = $params->getSecretKey();
         $data = $this->unsetData($data);
-        $postParams = [];
 
-        foreach ($data as $key => $value) {
-            $postParams[] = $key;
-        }
+        $storeKey = 'TEST1234';
+        $postParams = array_keys($data);
 
         natcasesort($postParams);
 
-        $hashval = "";
+        $hashval = '';
 
         foreach ($postParams as $param) {
-            $paramValue = trim(html_entity_decode(preg_replace("/\n$/", "", $data[$param]), ENT_QUOTES, 'UTF-8'));
+            $paramValue = trim(html_entity_decode(preg_replace("/\n$/", '', $data[$param]), ENT_QUOTES, 'UTF-8'));
             $escapedParamValue = str_replace(["\\", "|"], ["\\\\", "\\|"], $paramValue);
             $escapedParamValue = preg_replace('/document(.)/i', 'document.', $escapedParamValue);
 
             $lowerParam = strtolower($param);
 
-            if ($lowerParam !== 'hash' && $lowerParam !== 'encoding') {
+            if ('hash' !== $lowerParam && 'encoding' !== $lowerParam) {
                 $hashval .= ($escapedParamValue . '|');
             }
         }
@@ -167,6 +162,8 @@ class CmiPayController extends AbstractController
      * @param \CmiPayBundle\CmiPay $cmiPay
      *
      * @return array
+     *
+     * @deprecated
      */
     private function convertData(CmiPay $cmiPay)
     {
